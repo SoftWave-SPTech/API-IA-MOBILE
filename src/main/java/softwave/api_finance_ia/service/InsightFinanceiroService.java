@@ -22,20 +22,20 @@ public class InsightFinanceiroService {
     private final InsightFinanceiroRepository repository;
     private final MetricaFinanceiraService metricaFinanceiraService;
     private final PromptBuilderService promptBuilderService;
-    private final GeminiService geminiService;
+    private final OpenRouterService openRouterService;
     private final ObjectMapper objectMapper;
 
     public InsightFinanceiroService(
             InsightFinanceiroRepository repository,
             MetricaFinanceiraService metricaFinanceiraService,
             PromptBuilderService promptBuilderService,
-            GeminiService geminiService,
+            OpenRouterService openRouterService,
             ObjectMapper objectMapper
     ) {
         this.repository = repository;
         this.metricaFinanceiraService = metricaFinanceiraService;
         this.promptBuilderService = promptBuilderService;
-        this.geminiService = geminiService;
+        this.openRouterService = openRouterService;
         this.objectMapper = objectMapper;
     }
 
@@ -43,7 +43,7 @@ public class InsightFinanceiroService {
         validarPeriodo(request);
         Map<String, Object> metricas = metricaFinanceiraService.obterMetricasBase(request);
         String prompt = promptBuilderService.buildPrompt(request, metricas);
-        GeminiService.InsightEstruturado resposta = geminiService.gerarInsightEstruturado(prompt);
+        OpenRouterService.InsightEstruturado resposta = openRouterService.gerarInsightEstruturado(prompt);
 
         InsightFinanceiro insight = new InsightFinanceiro();
         insight.setTenantId(request.getTenantId());

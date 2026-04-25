@@ -13,9 +13,14 @@ Microservico Spring Boot para geracao de insights financeiros e de gestao com IA
 
 ## Variaveis de ambiente
 
-- `GEMINI_API_KEY`
-- `GEMINI_BASE_URL`
-- `GEMINI_MODEL`
+- `OPENROUTER_API_KEY`
+- `OPENROUTER_BASE_URL`
+- `OPENROUTER_MODEL`
+- `OPENROUTER_TIMEOUT_MS`
+- `OPENROUTER_MAX_OUTPUT_TOKENS`
+- `OPENROUTER_TEMPERATURE`
+- `OPENROUTER_APP_NAME`
+- `OPENROUTER_APP_URL`
 - `DB_URL`
 - `DB_USER`
 - `DB_PASSWORD`

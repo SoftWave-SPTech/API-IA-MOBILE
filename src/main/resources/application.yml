@@ -18,16 +18,26 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
 
-gemini:
-  api-key: ${GEMINI_API_KEY:}
-  base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
-  model: ${GEMINI_MODEL:gemini-2.0-flash}
-  timeout-ms: ${GEMINI_TIMEOUT_MS:30000}
-  max-output-tokens: ${GEMINI_MAX_OUTPUT_TOKENS:900}
-  temperature: ${GEMINI_TEMPERATURE:0.4}
+# gemini:
+#   api-key: ${GEMINI_API_KEY:AIzaSyDA8z-iP03pXSy2DNWp56l-Wv1JVu37VMk}
+#   base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
+#   model: ${GEMINI_MODEL:gemini-2.0-flash}
+#   timeout-ms: ${GEMINI_TIMEOUT_MS:30000}
+#   max-output-tokens: ${GEMINI_MAX_OUTPUT_TOKENS:900}
+#   temperature: ${GEMINI_TEMPERATURE:0.4}
+
+openrouter:
+  api-key: ${OPENROUTER_API_KEY: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}
+  base-url: ${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}
+  model: ${OPENROUTER_MODEL:google/gemini-2.0-flash-001}
+  timeout-ms: ${OPENROUTER_TIMEOUT_MS:30000}
+  max-output-tokens: ${OPENROUTER_MAX_OUTPUT_TOKENS:900}
+  temperature: ${OPENROUTER_TEMPERATURE:0.4}
+  app-name: ${OPENROUTER_APP_NAME:API-FINANCE-IA}
+  app-url: ${OPENROUTER_APP_URL:http://localhost:8084}
 
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:8080}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:8080,http://localhost:8081,http://localhost:19006}
 
 # URLs dos microsservicos financeiros (contrato em docs/CONTRATO_INTEGRACAO_BACK_FINANCEIRO.md)
 services:
