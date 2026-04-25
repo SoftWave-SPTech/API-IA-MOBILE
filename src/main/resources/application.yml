@@ -19,7 +19,7 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
 gemini:
-  api-key: ${GEMINI_API_KEY:AIzaSyBsFFonpHti3p5LUFjA8UGXmPbGgJIQgLg}
+  api-key: ${GEMINI_API_KEY:}
   base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
   model: ${GEMINI_MODEL:gemini-2.0-flash}
   timeout-ms: ${GEMINI_TIMEOUT_MS:30000}
