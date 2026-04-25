@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:8083}
+  port: ${SERVER_PORT:8084}
 
 spring:
   application:
@@ -19,7 +19,7 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
 gemini:
-  api-key: ${GEMINI_API_KEY:AIzaSyBsFFonpHti3p5LUFjA8UGXmPbGgJIQgLg}
+  api-key: ${GEMINI_API_KEY:}
   base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
   model: ${GEMINI_MODEL:gemini-2.0-flash}
   timeout-ms: ${GEMINI_TIMEOUT_MS:30000}
@@ -39,7 +39,17 @@ services:
     url: ${SERVICES_CLIENTES_URL:http://localhost:8080}
 
 features:
-  # true = usa numeros mock (faculdade / back ainda nao pronto)
-  usar-metricas-mock: ${USAR_METRICAS_MOCK:true}
-  # se false e a chamada Feign falhar, volta ao mock em vez de quebrar a demo
+  # true = ignora banco/Feign e usa numeros fixos de demonstracao
+  usar-metricas-mock: ${USAR_METRICAS_MOCK:false}
+  # banco = transacao + honorario + registro_financeiro (MySQL configurado em spring.datasource)
+  # feign = microsservicos em services.*.url (contrato em docs/)
+  fonte-metricas: ${FONTE_METRICAS:banco}
+  # tenantId da API = cliente_id em registro_financeiro (multi-escritorio: ajuste depois)
+  metricas-tenant-eh-cliente-id: ${METRICAS_TENANT_EH_CLIENTE_ID:true}
+  # regras de classificacao; pode ajustar sem mexer no codigo
+  metricas:
+    tipo-receita-valores: ${METRICAS_TIPO_RECEITA_VALORES:1,R,RECEITA,ENTRADA,CREDITO}
+    tipo-despesa-valores: ${METRICAS_TIPO_DESPESA_VALORES:2,S,DESPESA,SAIDA,DEBITO}
+    status-pago-valores: ${METRICAS_STATUS_PAGO_VALORES:1,PAGO,QUITADO,RECEBIDO}
+  # se a fonte escolhida falhar (ex.: DB fora ou Feign 503), volta ao mock em vez de quebrar
   fallback-metricas-mock-em-falha: ${FALLBACK_METRICAS_MOCK_EM_FALHA:true}

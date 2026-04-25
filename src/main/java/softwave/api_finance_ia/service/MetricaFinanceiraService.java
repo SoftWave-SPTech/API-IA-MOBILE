@@ -26,21 +26,31 @@ public class MetricaFinanceiraService {
     private final TransacoesClient transacoesClient;
     private final CobrancasClient cobrancasClient;
     private final ClientesClient clientesClient;
+    private final MetricaFinanceiraBancoService metricaFinanceiraBancoService;
 
-    @Value("${features.usar-metricas-mock:true}")
+    @Value("${features.usar-metricas-mock:false}")
     private boolean usarMetricasMock;
 
     @Value("${features.fallback-metricas-mock-em-falha:true}")
     private boolean fallbackMetricasMockEmFalha;
 
+    /**
+     * {@code banco} = agrega {@code transacao}, {@code honorario}, {@code registro_financeiro}.
+     * {@code feign} = microsserviços HTTP (contrato em docs/).
+     */
+    @Value("${features.fonte-metricas:banco}")
+    private String fonteMetricas;
+
     public MetricaFinanceiraService(
             TransacoesClient transacoesClient,
             CobrancasClient cobrancasClient,
-            ClientesClient clientesClient
+            ClientesClient clientesClient,
+            MetricaFinanceiraBancoService metricaFinanceiraBancoService
     ) {
         this.transacoesClient = transacoesClient;
         this.cobrancasClient = cobrancasClient;
         this.clientesClient = clientesClient;
+        this.metricaFinanceiraBancoService = metricaFinanceiraBancoService;
     }
 
     public Map<String, Object> obterMetricasBase(GerarInsightRequestDTO request) {
@@ -48,15 +58,20 @@ public class MetricaFinanceiraService {
             return metricasMock();
         }
         try {
-            TransacaoResumoResponse transacoes = transacoesClient.resumo(
+            if (isFonteFeign()) {
+                TransacaoResumoResponse transacoes = transacoesClient.resumo(
+                        request.getTenantId(), request.getDataInicio(), request.getDataFim());
+                CobrancaResumoResponse cobrancas = cobrancasClient.resumo(
+                        request.getTenantId(), request.getDataInicio(), request.getDataFim());
+                ClienteRankingReceitaResponse ranking = clientesClient.rankingReceita(
+                        request.getTenantId(), request.getDataInicio(), request.getDataFim(), 10);
+                return mergeMetricas(transacoes, cobrancas, ranking);
+            }
+            return metricaFinanceiraBancoService.obterMetricas(
                     request.getTenantId(), request.getDataInicio(), request.getDataFim());
-            CobrancaResumoResponse cobrancas = cobrancasClient.resumo(
-                    request.getTenantId(), request.getDataInicio(), request.getDataFim());
-            ClienteRankingReceitaResponse ranking = clientesClient.rankingReceita(
-                    request.getTenantId(), request.getDataInicio(), request.getDataFim(), 10);
-            return mergeMetricas(transacoes, cobrancas, ranking);
         } catch (Exception ex) {
-            log.warn("Falha ao obter metricas via microsservicos (tenantId={}): {}", request.getTenantId(), ex.getMessage());
+            log.warn("Falha ao obter metricas (fonte={}, tenantId={}): {}",
+                    fonteMetricas, request.getTenantId(), ex.getMessage());
             if (fallbackMetricasMockEmFalha) {
                 return metricasMock();
             }
@@ -71,20 +86,28 @@ public class MetricaFinanceiraService {
         LocalDate fim = LocalDate.now();
         LocalDate inicio = fim.minusMonths(3);
         try {
-            TransacaoResumoResponse transacoes = transacoesClient.resumo(tenantId, inicio, fim);
-            CobrancaResumoResponse cobrancas = cobrancasClient.resumo(tenantId, inicio, fim);
-            double receita = nz(transacoes.getReceitaTotal());
-            double despesa = nz(transacoes.getDespesaTotal());
-            double margem = receita > 0 ? ((receita - despesa) / receita) * 100.0 : 0.0;
-            double inadimplencia = nz(cobrancas.getInadimplenciaPercentual());
-            return new KpiResumoDTO(receita, despesa, margem, inadimplencia);
+            if (isFonteFeign()) {
+                TransacaoResumoResponse transacoes = transacoesClient.resumo(tenantId, inicio, fim);
+                CobrancaResumoResponse cobrancas = cobrancasClient.resumo(tenantId, inicio, fim);
+                double receita = nz(transacoes.getReceitaTotal());
+                double despesa = nz(transacoes.getDespesaTotal());
+                double margem = receita > 0 ? ((receita - despesa) / receita) * 100.0 : 0.0;
+                double inadimplencia = nz(cobrancas.getInadimplenciaPercentual());
+                return new KpiResumoDTO(receita, despesa, margem, inadimplencia);
+            }
+            MetricaFinanceiraBancoService.KpiResumoFromBanco k = metricaFinanceiraBancoService.obterKpisResumo(tenantId, inicio, fim);
+            return new KpiResumoDTO(k.receita(), k.despesa(), k.margemPercentual(), k.inadimplenciaPercentual());
         } catch (Exception ex) {
-            log.warn("Falha ao obter KPIs via microsservicos (tenantId={}): {}", tenantId, ex.getMessage());
+            log.warn("Falha ao obter KPIs (fonte={}, tenantId={}): {}", fonteMetricas, tenantId, ex.getMessage());
             if (fallbackMetricasMockEmFalha) {
                 return new KpiResumoDTO(85400.0, 42900.0, 49.8, 12.0);
             }
             throw ex;
         }
+    }
+
+    private boolean isFonteFeign() {
+        return fonteMetricas != null && "feign".equalsIgnoreCase(fonteMetricas.trim());
     }
 
     private static Map<String, Object> mergeMetricas(
@@ -108,6 +131,7 @@ public class MetricaFinanceiraService {
         double receita = nz(t.getReceitaTotal());
         double despesa = nz(t.getDespesaTotal());
         metricas.put("margemLucroPercentual", receita > 0 ? ((receita - despesa) / receita) * 100.0 : 0.0);
+        metricas.put("fonte", "FEIGN");
         return metricas;
     }
 

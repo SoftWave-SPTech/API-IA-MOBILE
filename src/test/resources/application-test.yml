@@ -12,4 +12,6 @@ spring:
 
 features:
   usar-metricas-mock: true
+  fonte-metricas: banco
+  metricas-tenant-eh-cliente-id: true
   fallback-metricas-mock-em-falha: true
