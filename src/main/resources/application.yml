@@ -19,7 +19,7 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
 # gemini:
-#   api-key: ${GEMINI_API_KEY:AIzaSyDA8z-iP03pXSy2DNWp56l-Wv1JVu37VMk}
+#   api-key: ${GEMINI_API_KEY:}
 #   base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
 #   model: ${GEMINI_MODEL:gemini-2.0-flash}
 #   timeout-ms: ${GEMINI_TIMEOUT_MS:30000}
@@ -27,7 +27,7 @@ spring:
 #   temperature: ${GEMINI_TEMPERATURE:0.4}
 
 openrouter:
-  api-key: ${OPENROUTER_API_KEY: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}
+  api-key: ${OPENROUTER_API_KEY:}
   base-url: ${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}
   model: ${OPENROUTER_MODEL:google/gemini-2.0-flash-001}
   timeout-ms: ${OPENROUTER_TIMEOUT_MS:30000}
