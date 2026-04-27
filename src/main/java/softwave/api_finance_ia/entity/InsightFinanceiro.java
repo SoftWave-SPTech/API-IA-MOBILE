@@ -16,6 +16,9 @@ public class InsightFinanceiro {
     @Column(nullable = false)
     private Long tenantId;
 
+    @Column
+    private Long userId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
     private EnumTipoInsight tipoInsight;
@@ -71,6 +74,14 @@ public class InsightFinanceiro {
 
     public void setTenantId(Long tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public EnumTipoInsight getTipoInsight() {

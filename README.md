@@ -24,10 +24,13 @@ Microservico Spring Boot para geracao de insights financeiros e de gestao com IA
 - `DB_URL`
 - `DB_USER`
 - `DB_PASSWORD`
+- `JWT_SECRET` (ou `AUTH_JWT_SECRET`) - usar o mesmo valor da API-AUTH-MAIL
 - `CORS_ALLOWED_ORIGINS`
 - `SERVICES_TRANSACOES_URL`, `SERVICES_COBRANCAS_URL`, `SERVICES_CLIENTES_URL`
 - `USAR_METRICAS_MOCK` (padrao `true` — desligue quando o back expuser os endpoints)
 - `FALLBACK_METRICAS_MOCK_EM_FALHA` (padrao `true`)
+- `DEFAULT_TENANT_ID` (padrao `1`, para cenario de empresa unica)
+- `USER_TENANT_MAP` (opcional, ex.: `1:1,2:1`)
 
 ## Contrato com o back financeiro
 

@@ -7,7 +7,6 @@ import java.time.LocalDate;
 
 public class GerarInsightRequestDTO {
 
-    @NotNull
     private Long tenantId;
 
     @NotNull

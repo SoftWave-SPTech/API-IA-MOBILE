@@ -10,6 +10,12 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public interface InsightFinanceiroRepository extends JpaRepository<InsightFinanceiro, Long> {
+    Page<InsightFinanceiro> findByUserId(Long userId, Pageable pageable);
+
+    Page<InsightFinanceiro> findByUserIdAndTipoInsight(Long userId, EnumTipoInsight tipoInsight, Pageable pageable);
+
+    Optional<InsightFinanceiro> findTopByUserIdAndTipoInsightOrderByCriadoEmDesc(Long userId, EnumTipoInsight tipoInsight);
+
     Page<InsightFinanceiro> findByTenantId(Long tenantId, Pageable pageable);
 
     Page<InsightFinanceiro> findByTenantIdAndTipoInsight(Long tenantId, EnumTipoInsight tipoInsight, Pageable pageable);

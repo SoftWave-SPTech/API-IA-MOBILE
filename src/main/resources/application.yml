@@ -1,6 +1,11 @@
 server:
   port: ${SERVER_PORT:8084}
 
+jwt:
+  # TEMPORARIO (ambiente local): mesmo segredo da API-AUTH-MAIL.
+  # Quando estabilizar, voltar para variavel de ambiente.
+  secret: RXhpc3RlIHVtYSB0ZW9yaWEgcXVlIGRpeiBxdWUsIHNlIHVtIGRpYSBhbGd16W0gZGVzY29icmlyIGV4YXRhbWVudGUgcGFyYSBxdWUgc2VydmUgbyBVbml2ZXJzbyBlIHBvciBxdWUgZWxlIGVzdOEgYXF1aSwgZWxlIGRlc2FwYXJlY2Vy4SBpbnN0YW50YW5lYW1lbnRlIGUgc2Vy4SBzdWJzdGl0de1kbyBwb3IgYWxnbyBhaW5kYSBtYWlzIGVzdHJhbmhvIGUgaW5leHBsaWPhdmVsLiBFeGlzdGUgdW1hIHNlZ3VuZGEgdGVvcmlhIHF1ZSBkaXogcXVlIGlzc28gauEgYWNvbnRlY2V1Li4u
+
 spring:
   application:
     name: api-finance-ia
@@ -11,7 +16,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${JPA_DDL_AUTO:none}
     show-sql: ${JPA_SHOW_SQL:true}
     properties:
       hibernate:
@@ -27,7 +32,7 @@ spring:
 #   temperature: ${GEMINI_TEMPERATURE:0.4}
 
 openrouter:
-  api-key: ${OPENROUTER_API_KEY:}
+  api-key: ${OPENROUTER_API_KEY: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}
   base-url: ${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}
   model: ${OPENROUTER_MODEL:google/gemini-2.0-flash-001}
   timeout-ms: ${OPENROUTER_TIMEOUT_MS:30000}
@@ -56,6 +61,12 @@ features:
   fonte-metricas: ${FONTE_METRICAS:banco}
   # tenantId da API = cliente_id em registro_financeiro (multi-escritorio: ajuste depois)
   metricas-tenant-eh-cliente-id: ${METRICAS_TENANT_EH_CLIENTE_ID:true}
+  # fallback para quando request nao enviar tenantId e o sistema resolver por usuario:
+  # - default-tenant-id: tenant unico para todos os socios/donos
+  # - user-tenant-map: pares userId:tenantId separados por virgula (ex.: "1:10,2:10,3:11")
+  # Ambiente atual: assume tenant unico (1). Ajuste via DEFAULT_TENANT_ID se necessario.
+  default-tenant-id: ${DEFAULT_TENANT_ID:1}
+  user-tenant-map: ${USER_TENANT_MAP:}
   # regras de classificacao; pode ajustar sem mexer no codigo
   metricas:
     tipo-receita-valores: ${METRICAS_TIPO_RECEITA_VALORES:1,R,RECEITA,ENTRADA,CREDITO}

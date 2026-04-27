@@ -15,6 +15,7 @@ public class InsightFinanceiroResponseDTO {
 
     private Long id;
     private Long tenantId;
+    private Long userId;
     private EnumTipoInsight tipoInsight;
     private LocalDate dataInicio;
     private LocalDate dataFim;
@@ -30,6 +31,7 @@ public class InsightFinanceiroResponseDTO {
         InsightFinanceiroResponseDTO dto = new InsightFinanceiroResponseDTO();
         dto.setId(entity.getId());
         dto.setTenantId(entity.getTenantId());
+        dto.setUserId(entity.getUserId());
         dto.setTipoInsight(entity.getTipoInsight());
         dto.setDataInicio(entity.getDataInicio());
         dto.setDataFim(entity.getDataFim());
@@ -69,6 +71,14 @@ public class InsightFinanceiroResponseDTO {
 
     public void setTenantId(Long tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public EnumTipoInsight getTipoInsight() {
