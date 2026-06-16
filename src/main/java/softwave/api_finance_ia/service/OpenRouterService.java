@@ -34,12 +34,33 @@ public class OpenRouterService {
         try {
             String endpoint = "%s/chat/completions".formatted(openRouterConfig.getBaseUrl());
 
+            // -----------------------------------------------------------------
+            // CORREÇÃO PRINCIPAL:
+            // O prompt completo (construído pelo PromptBuilderService) vai no
+            // role "system" — que tem maior peso de instrução no modelo.
+            // O role "user" é apenas o gatilho de execução, sem conteúdo extra
+            // que possa conflitar com as regras do system prompt.
+            //
+            // ANTES (errado): system genérico + user com o prompt completo
+            //   → o system genérico sobrescrevia as regras de formato,
+            //     causando retorno com chaves erradas ou markdown indevido.
+            //
+            // AGORA (correto): system com o prompt completo + user como gatilho
+            //   → o modelo respeita todas as regras de JSON, chaves exatas
+            //     e proibições definidas no PromptBuilderService.
+            // -----------------------------------------------------------------
             String requestBody = """
                     {
                       "model": %s,
                       "messages": [
-                        {"role":"system","content":"Voce e um analista financeiro e deve responder em JSON valido."},
-                        {"role":"user","content": %s}
+                        {
+                          "role": "system",
+                          "content": %s
+                        },
+                        {
+                          "role": "user",
+                          "content": "Gere o insight financeiro conforme as instrucoes."
+                        }
                       ],
                       "temperature": %s,
                       "max_tokens": %s
@@ -66,11 +87,16 @@ public class OpenRouterService {
             }
 
             HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<String> response = client.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client.send(
+                    requestBuilder.build(),
+                    HttpResponse.BodyHandlers.ofString()
+            );
+
             JsonNode root = objectMapper.readTree(response.body());
 
             if (response.statusCode() >= 400 || root.has("error")) {
-                String errorMessage = root.path("error").path("message").asText("Falha no OpenRouter.");
+                String errorMessage = root.path("error").path("message")
+                        .asText("Falha no OpenRouter.");
                 throw new ServiceUnavailableException(errorMessage);
             }
 
@@ -82,6 +108,7 @@ public class OpenRouterService {
                     .trim();
 
             return parseStructuredOutput(rawText);
+
         } catch (ServiceUnavailableException e) {
             throw e;
         } catch (Exception e) {
@@ -91,25 +118,34 @@ public class OpenRouterService {
 
     private InsightEstruturado parseStructuredOutput(String rawText) {
         try {
+            // Extrai o bloco JSON mesmo que venha com markdown ```json ... ```
             String jsonPayload = rawText;
             int start = rawText.indexOf('{');
-            int end = rawText.lastIndexOf('}');
+            int end   = rawText.lastIndexOf('}');
             if (start >= 0 && end > start) {
                 jsonPayload = rawText.substring(start, end + 1);
             }
 
             JsonNode parsed = objectMapper.readTree(jsonPayload);
-            String resumo = parsed.path("resumo").asText("").trim();
-            List<String> bullets = readStringArray(parsed.path("bullets"));
-            List<String> riscos = readStringArray(parsed.path("riscos"));
-            List<String> oportunidades = readStringArray(parsed.path("oportunidades"));
-            int scoreConfianca = parsed.path("scoreConfianca").asInt(75);
 
+            String resumo       = parsed.path("resumo").asText("").trim();
+            List<String> bullets      = readStringArray(parsed.path("bullets"));
+            List<String> riscos       = readStringArray(parsed.path("riscos"));
+            List<String> oportunidades = readStringArray(parsed.path("oportunidades"));
+            int scoreConfianca  = parsed.path("scoreConfianca").asInt(75);
+
+            // Se o resumo vier vazio (parse falhou), usa o texto bruto
             if (resumo.isBlank()) {
                 resumo = rawText;
             }
-            return new InsightEstruturado(resumo, bullets, riscos, oportunidades, scoreConfianca, openRouterConfig.getModel());
+
+            return new InsightEstruturado(
+                    resumo, bullets, riscos, oportunidades,
+                    scoreConfianca, openRouterConfig.getModel()
+            );
+
         } catch (Exception ex) {
+            // Fallback: devolve o texto cru no resumo para não perder a resposta
             return new InsightEstruturado(
                     rawText,
                     Collections.emptyList(),
@@ -125,7 +161,8 @@ public class OpenRouterService {
         if (!node.isArray()) {
             return Collections.emptyList();
         }
-        return java.util.stream.StreamSupport.stream(node.spliterator(), false)
+        return java.util.stream.StreamSupport
+                .stream(node.spliterator(), false)
                 .map(JsonNode::asText)
                 .map(String::trim)
                 .filter(s -> !s.isBlank())
@@ -139,6 +176,5 @@ public class OpenRouterService {
             List<String> oportunidades,
             Integer scoreConfianca,
             String modeloIA
-    ) {
-    }
+    ) {}
 }

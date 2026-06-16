@@ -15,7 +15,7 @@ Microservico Spring Boot para geracao de insights financeiros e de gestao com IA
 
 - `OPENROUTER_API_KEY`
 - `OPENROUTER_BASE_URL`
-- `OPENROUTER_MODEL`
+- `OPENROUTER_MODEL` (padrao `google/gemini-2.5-flash`; o antigo `google/gemini-2.0-flash-001` foi descontinuado no OpenRouter)
 - `OPENROUTER_TIMEOUT_MS`
 - `OPENROUTER_MAX_OUTPUT_TOKENS`
 - `OPENROUTER_TEMPERATURE`
